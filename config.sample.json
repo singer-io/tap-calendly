@@ -1,5 +1,5 @@
 {
-  "calendly_api_token": "eyowihlskflksdhls",
+  "calendly_api_token": "{token}",
   "user_agent": "tap-calendly (Singer tap)",
   "start_date": "2017-01-01T00:00:00Z",
   "mode": "org"

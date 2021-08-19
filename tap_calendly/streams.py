@@ -1,18 +1,26 @@
 """Stream type classes for tap-calendly."""
-import re
-from pathlib import Path
-from typing import Any, Dict, Optional, Union, List, Iterable
+from typing import Any, Dict, Optional, List
 
 from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_calendly.client import CalendlyStream
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
+# rearrange for targets like BigQuery
+def rearrange_schema(schema: dict):
+    props = schema.get('properties', schema)
+    for k, v in props.items():
+        if 'type' in v:
+            if isinstance(v['type'], list):
+                temp = v['type'][0]
+                v['type'][0] = v['type'][1]
+                v['type'][1] = temp
+        if 'properties' in v:
+            v['properties'] = rearrange_schema(v['properties'])
+        if 'items' in v:
+            v['items'] = rearrange_schema(v['items'])
+    return schema
 
-# TODO: - Override `UsersStream` and `GroupsStream` with your own stream definition.
-#       - Copy-paste as many times as needed to create multiple stream types.
 
 def parse_id(uri):
     # https://api.calendly.com/organizations/HAHAZEHOQ7RURZ5V
@@ -28,13 +36,14 @@ class EventsStream(CalendlyStream):
     replication_key = "updated_at"
     # Optionally, you may also use `schema_filepath` in place of `schema`:
     # schema_filepath = SCHEMAS_DIR / "users.json"
-    schema = th.PropertiesList(
+    schema = rearrange_schema(th.PropertiesList(
         th.Property("uri", th.StringType),
         th.Property("name", th.StringType),
         th.Property("status", th.StringType),
         th.Property("start_time", th.DateTimeType),
         th.Property("end_time", th.DateTimeType),
         th.Property("event_type", th.StringType),
+        # th.Property("invitees_counter", th.IntegerType),
         th.Property("location",
                     th.ObjectType(th.Property("type", th.StringType), th.Property("location", th.StringType))),
         th.Property("created_at", th.DateTimeType),
@@ -43,7 +52,7 @@ class EventsStream(CalendlyStream):
         th.Property("event_guests", th.ArrayType(th.ObjectType(th.Property("email", th.StringType),
                                                                th.Property("created_at", th.DateTimeType),
                                                                th.Property("update_at", th.DateTimeType)))),
-    ).to_dict()
+    ).to_dict())
 
     @property
     def metadata(self) -> List[dict]:
@@ -51,6 +60,14 @@ class EventsStream(CalendlyStream):
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         return {'event_id': parse_id(record['uri'])}
+
+    def get_url_params(
+            self, context: Optional[dict], next_page_token: Optional[Any]
+    ) -> Dict[str, Any]:
+        params = super().get_url_params(context, next_page_token)
+        params['sort'] = 'start_time:asc'
+        params['min_start_time'] = self.config.get('start_date', None)
+        return params
 
 
 class EventInviteesStream(CalendlyStream):
@@ -62,12 +79,15 @@ class EventInviteesStream(CalendlyStream):
     primary_keys = ["uri"]
     replication_key = "updated_at"
 
-    schema = th.PropertiesList(
+    schema = rearrange_schema(th.PropertiesList(
         th.Property("cancel_url", th.StringType),
         th.Property("created_at", th.DateTimeType),
         th.Property("email", th.StringType),
         th.Property("event", th.StringType),
         th.Property("name", th.StringType),
+        th.Property("first_name", th.StringType),
+        th.Property("last_name", th.StringType),
+        th.Property("event_id", th.StringType),
         th.Property("new_invitee", th.StringType),
         th.Property("old_invitee", th.StringType),
         th.Property("questions_and_answers", th.ArrayType(
@@ -93,7 +113,7 @@ class EventInviteesStream(CalendlyStream):
                                              th.Property("currency", th.StringType),
                                              th.Property("terms", th.StringType),
                                              th.Property("successful", th.BooleanType))),
-    ).to_dict()
+    ).to_dict())
 
     @property
     def metadata(self) -> List[dict]:
@@ -107,7 +127,7 @@ class EventTypesStream(CalendlyStream):
     primary_keys = ["uri"]
     replication_key = "updated_at"
 
-    schema = th.PropertiesList(
+    schema = rearrange_schema(th.PropertiesList(
         th.Property("uri", th.StringType),
         th.Property("name", th.StringType),
         th.Property("active", th.BooleanType),
@@ -135,7 +155,7 @@ class EventTypesStream(CalendlyStream):
                                                                                th.ArrayType(th.StringType)),
                                                                    th.Property("include_other", th.BooleanType)))),
 
-    ).to_dict()
+    ).to_dict())
 
     @property
     def metadata(self) -> List[dict]:
@@ -149,7 +169,7 @@ class OrganizationMembershipsStream(CalendlyStream):
     primary_keys = ["uri"]
     replication_key = "updated_at"
 
-    schema = th.PropertiesList(
+    schema = rearrange_schema(th.PropertiesList(
         th.Property("uri", th.StringType),
         th.Property("role", th.StringType),
         th.Property("user", th.ObjectType(th.Property("uri", th.StringType),
@@ -162,9 +182,9 @@ class OrganizationMembershipsStream(CalendlyStream):
                                           th.Property("created_at", th.DateTimeType),
                                           th.Property("updated_at", th.DateTimeType))),
         th.Property("organization", th.StringType),
-        th.Property("update_at", th.DateTimeType),
+        th.Property("updated_at", th.DateTimeType),
         th.Property("created_at", th.DateTimeType),
-    ).to_dict()
+    ).to_dict())
 
     @property
     def metadata(self) -> List[dict]:
@@ -174,19 +194,23 @@ class OrganizationMembershipsStream(CalendlyStream):
 class OrganizationInvitationsStream(CalendlyStream):
     """Define custom stream."""
     name = "organization_invitations"
-    path = "/organization_memberships"
     primary_keys = ["uri"]
     replication_key = "updated_at"
 
-    schema = th.PropertiesList(
+    schema = rearrange_schema(th.PropertiesList(
         th.Property("uri", th.StringType),
         th.Property("organization", th.StringType),
         th.Property("email", th.StringType),
+        th.Property("role", th.StringType),
         th.Property("created_at", th.DateTimeType),
         th.Property("updated_at", th.DateTimeType),
         th.Property("last_sent_at", th.DateTimeType),
         th.Property("user", th.StringType),
-    ).to_dict()
+    ).to_dict())
+
+    def __init__(self, tap):
+        super().__init__(tap)
+        self.path = f"/organizations/{parse_id(self.user['current_organization'])}/invitations"
 
     @property
     def metadata(self) -> List[dict]:

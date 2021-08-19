@@ -1,100 +1,40 @@
+---
+
 # tap-calendly
 
-`tap-calendly` is a Singer tap for calendly.
+## Connecting
 
-Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
+### Requirements
 
-## Installation
+To set up tap-calendly in Stitch, you need:
 
-- [ ] `Developer TODO:` Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
 
-```bash
-pipx install tap-calendly
-```
+-  **Calendly API Token** - API token belonging to the account to be used by the tap
 
-## Configuration
+### Setup
 
-### Accepted Config Options
+To obtain API token, login to calendly.com and visit the [API Webhooks](https://calendly.com/integrations/api_webhooks) page. Click "Generate New Token", and copy the token. Paste in config.json "calendly_api_token" field.
 
-- [ ] `Developer TODO:` Provide a list of config options accepted by the tap.
+---
 
-A full list of supported settings and capabilities for this
-tap is available by running:
+## Replication
 
-```bash
-tap-calendly --about
-```
+As the Calendly API does not support sorting by replication key ("updated_at"), bookmarking and sync resume is not supported.
 
-### Source Authentication and Authorization
+---
 
-- [ ] `Developer TODO:` If your tap requires special access on the source system, or any special authentication requirements, provide those here.
+##  Streams/Endpoints
 
-## Usage
+- [events](https://calendly.stoplight.io/docs/api-docs/reference/calendly-api/openapi.yaml/paths/~1scheduled_events/get)
+- [event_invitees](https://calendly.stoplight.io/docs/api-docs/reference/calendly-api/openapi.yaml/paths/~1scheduled_events~1%7Buuid%7D~1invitees/get)
+- [event_types](https://calendly.stoplight.io/docs/api-docs/reference/calendly-api/openapi.yaml/paths/~1event_types/get)
+- [organization_memberships](https://calendly.stoplight.io/docs/api-docs/reference/calendly-api/openapi.yaml/paths/~1organization_memberships/get)
+- [organization_invitations](https://calendly.stoplight.io/docs/api-docs/reference/calendly-api/openapi.yaml/paths/~1organizations~1%7Buuid%7D~1invitations/get)
 
-You can easily run `tap-calendly` by itself or in a pipeline using [Meltano](https://meltano.com/).
+Primary key of every stream/endpoint is "uri", and all endpoints are replicated fully (not incrementally)
 
-### Executing the Tap Directly
+---
 
-```bash
-tap-calendly --version
-tap-calendly --help
-tap-calendly --config CONFIG --discover > ./catalog.json
-```
-
-## Developer Resources
-
-- [ ] `Developer TODO:` As a first step, scan the entire project for the text "`TODO:`" and complete any recommended steps, deleting the "TODO" references once completed.
-
-### Initialize your Development Environment
-
-```bash
-pipx install poetry
-poetry install
-```
-
-### Create and Run Tests
-
-Create tests within the `tap_calendly/tests` subfolder and
-  then run:
-
-```bash
-poetry run pytest
-```
-
-You can also test the `tap-calendly` CLI interface directly using `poetry run`:
-
-```bash
-poetry run tap-calendly --help
-```
-
-### Testing with [Meltano](https://www.meltano.com)
-
-_**Note:** This tap will work in any Singer environment and does not require Meltano.
-Examples here are for convenience and to streamline end-to-end orchestration scenarios._
-
-Your project comes with a custom `meltano.yml` project file already created. Open the `meltano.yml` and follow any _"TODO"_ items listed in
-the file.
-
-Next, install Meltano (if you haven't already) and any needed plugins:
-
-```bash
-# Install meltano
-pipx install meltano
-# Initialize meltano within this directory
-cd tap-calendly
-meltano install
-```
-
-Now you can test and orchestrate using Meltano:
-
-```bash
-# Test invocation:
-meltano invoke tap-calendly --version
-# OR run a test `elt` pipeline:
-meltano elt tap-calendly target-jsonl
-```
-
-### SDK Dev Guide
-
-See the [dev guide](https://sdk.meltano.com/en/latest/dev_guide.html) for more instructions on how to use the SDK to 
-develop your own taps and targets.
+## More Information
+- "user" mode vs. "org" mode
+  - In config.json file, specify "mode": "org" or "mode": "user".  This specifies whether the tap will fetch records pertaining to the current user only, or records pertaining to the user organization. For example, events that are scheduled by the user vs. every event scheduled by throughout the entire organization.

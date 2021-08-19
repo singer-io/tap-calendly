@@ -5,7 +5,6 @@ from typing import List
 from singer_sdk import Tap, Stream
 from singer_sdk import typing as th  # JSON schema typing helpers
 
-# TODO: Import your custom stream types here:
 from tap_calendly.streams import (
     EventsStream,
     EventInviteesStream,
@@ -13,8 +12,7 @@ from tap_calendly.streams import (
     OrganizationInvitationsStream,
     OrganizationMembershipsStream,
 )
-# TODO: Compile a list of custom stream types here
-#       OR rewrite discover_streams() below with your custom logic.
+
 STREAM_TYPES = [
     EventsStream,
     EventInviteesStream,
@@ -28,7 +26,6 @@ class TapCalendly(Tap):
     """Calendly tap class."""
     name = "tap-calendly"
 
-    # TODO: Update this section with the actual config values you expect:
     config_jsonschema = th.PropertiesList(
         th.Property("calendly_api_token", th.StringType, required=True),
         th.Property("start_date", th.DateTimeType),
