@@ -1,5 +1,3 @@
----
-
 # tap-calendly
 
 ## Connecting
