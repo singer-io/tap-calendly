@@ -54,9 +54,9 @@ class EventsStream(CalendlyStream):
                                                                th.Property("update_at", th.DateTimeType)))),
     ).to_dict())
 
-    @property
-    def metadata(self) -> List[dict]:
-        return []
+    # @property
+    # def metadata(self) -> List[dict]:
+    #     return []
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         return {'event_id': parse_id(record['uri'])}
@@ -115,9 +115,9 @@ class EventInviteesStream(CalendlyStream):
                                              th.Property("successful", th.BooleanType))),
     ).to_dict())
 
-    @property
-    def metadata(self) -> List[dict]:
-        return []
+    # @property
+    # def metadata(self) -> List[dict]:
+    #     return []
 
 
 class EventTypesStream(CalendlyStream):
@@ -157,9 +157,9 @@ class EventTypesStream(CalendlyStream):
 
     ).to_dict())
 
-    @property
-    def metadata(self) -> List[dict]:
-        return []
+    # @property
+    # def metadata(self) -> List[dict]:
+    #     return []
 
 
 class OrganizationMembershipsStream(CalendlyStream):
@@ -186,9 +186,9 @@ class OrganizationMembershipsStream(CalendlyStream):
         th.Property("created_at", th.DateTimeType),
     ).to_dict())
 
-    @property
-    def metadata(self) -> List[dict]:
-        return []
+    # @property
+    # def metadata(self) -> List[dict]:
+    #     return []
 
 
 class OrganizationInvitationsStream(CalendlyStream):
@@ -212,6 +212,6 @@ class OrganizationInvitationsStream(CalendlyStream):
         super().__init__(tap)
         self.path = f"/organizations/{parse_id(self.user['current_organization'])}/invitations"
 
-    @property
-    def metadata(self) -> List[dict]:
-        return []
+    # @property
+    # def metadata(self) -> List[dict]:
+    #     return []
