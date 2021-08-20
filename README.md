@@ -35,4 +35,4 @@ Primary key of every stream/endpoint is "uri", and all endpoints are replicated 
 
 ## More Information
 - "user" mode vs. "org" mode
-  - In config.json file, specify "mode": "org" or "mode": "user".  This specifies whether the tap will fetch records pertaining to the current user only, or records pertaining to the user organization. For example, events that are scheduled by the user vs. every event scheduled by throughout the entire organization.
+  - In config.json file, specify "mode": "org" or "mode": "user".  This determines whether the tap will fetch records pertaining to the current user only, or records pertaining to the user organization. For example, events that are scheduled by the user vs. every event scheduled by every user throughout the entire organization.
