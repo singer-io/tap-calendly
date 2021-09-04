@@ -1,12 +1,12 @@
 """REST client handling, including calendlyStream base class."""
+from pathlib import Path
+from typing import Any, Dict, Optional, Iterable
 from urllib.parse import urljoin, urlparse, parse_qs
 
 import requests
-from pathlib import Path
-from typing import Any, Dict, Optional, Union, List, Iterable
-
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
+
 from tap_calendly.auth import CalendlyAuthenticator
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
