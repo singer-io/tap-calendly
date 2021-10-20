@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='tap-calendly',
-    version='0.0.1',
+    version='0.0.2',
     packages=['tap_calendly', 'tap_calendly.tests'],
     url='https://github.com/singer-io/tap-calendly',
     license='',
