@@ -23,7 +23,6 @@ def rearrange_schema(schema: dict):
 
 
 def parse_id(uri):
-    # https://api.calendly.com/organizations/HAHAZEHOQ7RURZ5V
     return uri.split('/')[-1]
     # return re.findall(r'/([A-Z0-9]{15,})', uri)[0]
 
@@ -43,7 +42,9 @@ class EventsStream(CalendlyStream):
         th.Property("start_time", th.DateTimeType),
         th.Property("end_time", th.DateTimeType),
         th.Property("event_type", th.StringType),
-        # th.Property("invitees_counter", th.IntegerType),
+        #new
+        th.Property("invitees_counter",
+                    th.ObjectType(th.Property("total", th.IntegerType), th.Property("active", th.IntegerType), th.Property("limit", th.IntegerType))),
         th.Property("location",
                     th.ObjectType(th.Property("type", th.StringType), th.Property("location", th.StringType))),
         th.Property("created_at", th.DateTimeType),
@@ -51,7 +52,10 @@ class EventsStream(CalendlyStream):
         th.Property("event_memberships", th.ArrayType(th.ObjectType(th.Property("user", th.StringType)))),
         th.Property("event_guests", th.ArrayType(th.ObjectType(th.Property("email", th.StringType),
                                                                th.Property("created_at", th.DateTimeType),
-                                                               th.Property("update_at", th.DateTimeType)))),
+                                                               th.Property("updated_at", th.DateTimeType)))),
+        #new
+        th.Property("cancellation",
+                    th.ObjectType(th.Property("canceled_by", th.StringType), th.Property("reason", th.StringType), th.Property("canceler_type", th.StringType))),
     ).to_dict())
 
     # @property
@@ -67,6 +71,7 @@ class EventsStream(CalendlyStream):
         params = super().get_url_params(context, next_page_token)
         params['sort'] = 'start_time:asc'
         params['min_start_time'] = self.config.get('start_date', None)
+        # params['max_start_time'] = self.config.get('end_date', None)
         return params
 
 
@@ -106,13 +111,24 @@ class EventInviteesStream(CalendlyStream):
                                               th.Property("salesforce_uuid", th.StringType))),
         th.Property("updated_at", th.DateTimeType),
         th.Property("uri", th.StringType),
-        th.Property("canceled", th.BooleanType),
+        # #new
+        th.Property("cancellation",
+                    th.ObjectType(th.Property("canceled_by", th.StringType), th.Property("reason", th.StringType), th.Property("canceler_type", th.StringType))),
         th.Property("payment", th.ObjectType(th.Property("external_id", th.StringType),
                                              th.Property("provider", th.StringType),
                                              th.Property("amount", th.NumberType),
                                              th.Property("currency", th.StringType),
                                              th.Property("terms", th.StringType),
                                              th.Property("successful", th.BooleanType))),
+        #new
+        th.Property("routing_form_submission", th.StringType), 
+        #new
+        th.Property("no_show",
+                    th.ObjectType(th.Property("uri", th.StringType), th.Property("created_at", th.DateTimeType))),
+        #new
+        th.Property("reconfirmation",
+                    th.ObjectType(th.Property("created_at", th.DateTimeType), th.Property("confirmed_at", th.DateTimeType))),
+   
     ).to_dict())
 
     # @property
@@ -140,12 +156,16 @@ class EventTypesStream(CalendlyStream):
         th.Property("color", th.StringType),
         th.Property("created_at", th.DateTimeType),
         th.Property("updated_at", th.DateTimeType),
+        #new
+        th.Property("internal_note", th.StringType),
         th.Property("description_plain", th.StringType),
         th.Property("description_html", th.StringType),
         th.Property("profile", th.ObjectType(th.Property("type", th.StringType),
                                              th.Property("name", th.StringType),
                                              th.Property("owner", th.StringType))),
         th.Property("secret", th.BooleanType),
+        #new
+        th.Property("booking_method", th.StringType),
         th.Property("custom_questions", th.ArrayType(th.ObjectType(th.Property("name", th.StringType),
                                                                    th.Property("type", th.StringType),
                                                                    th.Property("position", th.IntegerType),
@@ -154,7 +174,7 @@ class EventTypesStream(CalendlyStream):
                                                                    th.Property("answer_choices",
                                                                                th.ArrayType(th.StringType)),
                                                                    th.Property("include_other", th.BooleanType)))),
-
+        th.Property("deleted_at", th.DateTimeType),
     ).to_dict())
 
     # @property
@@ -201,7 +221,7 @@ class OrganizationInvitationsStream(CalendlyStream):
         th.Property("uri", th.StringType),
         th.Property("organization", th.StringType),
         th.Property("email", th.StringType),
-        th.Property("role", th.StringType),
+        th.Property("status", th.StringType),
         th.Property("created_at", th.DateTimeType),
         th.Property("updated_at", th.DateTimeType),
         th.Property("last_sent_at", th.DateTimeType),

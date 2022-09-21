@@ -10,4 +10,10 @@ setup(
     author_email='nolanmccafferty@gmail.com',
     description='Singer.io tap for Calendly',
     install_requires=['setuptools~=41.0.1', 'requests~=2.25.1', 'singer-sdk'],
+    classifiers=['Programming Language :: Python :: 3 :: Only'],
+    py_modules=['tap_calendly'],
+    entry_points='''
+            [console_scripts]
+            tap-calendly=tap_calendly.tap:TapCalendly.cli
+        '''
 )
