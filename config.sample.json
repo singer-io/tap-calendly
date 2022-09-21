@@ -1,6 +1,6 @@
 {
   "calendly_api_token": "{token}",
   "user_agent": "tap-calendly (Singer tap)",
-  "start_date": "2017-01-01T00:00:00Z",
+  "start_date": "2017-01-01T00:00:00.000000Z",
   "mode": "org"
 }

@@ -18,7 +18,7 @@ class CalendlyStream(RESTStream):
     url_base = "https://api.calendly.com"
 
     records_jsonpath = "$.collection[*]"  # Or override `parse_response`.
-    next_page_token_jsonpath = "$.pagination.next_page"  # Or override `get_next_page_token`.
+    next_page_token_jsonpath = "$.pagination.next_page_token"  # Or override `get_next_page_token`.
 
     def __init__(self, tap):
         super().__init__(tap)
@@ -55,9 +55,10 @@ class CalendlyStream(RESTStream):
             )
             first_match = next(iter(all_matches), None)
             if first_match:
-                parsed = urlparse(first_match)
-                qs = parse_qs(parsed.query)
-                next_page_token = qs['page_token'][0]
+                # parsed = urlparse(first_match)
+                # qs = parse_qs(parsed.query)
+                # next_page_token = qs['page_token'][0]
+                next_page_token = first_match
             else:
                 next_page_token = None
         else:
